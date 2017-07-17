@@ -8,24 +8,33 @@
             form(@submit.prevent="signUp")
                 v-card-text(class="white-bg")
                     v-text-field(
-                        v-model="form.name"
+                        v-model.trim="form.name"
                         single-line
                         label="Nombre"
                         hint="Debe escribir su nombre real"
                         prepend-icon="account_box"
                         required
+                        @blur="hola('name')"
                     )
+                    //pre {{ $data }}
+                    v-snackbar(top right error v-model="snackbar" v-if="!$v.form.name.alpha && this.permit.name")
+                        v-icon(light class="snackbar-icon") cancel
+                        | El nombre no puede contener números ni caracteres especiales
                     v-text-field(
-                        v-model="form.email"
+                        v-model.trim.lazy="form.email"
                         single-line
                         label="Dirección de correo electrónico"
                         hint="Esta dirección de correo se utilizará para iniciar sesión en GEST"
                         prepend-icon="email"
                         type="email"
                         required
+                        @blur="hola('email')"
                     )
+                    v-snackbar(top right error v-model="snackbar" v-if="!$v.form.email.email && this.permit.email")
+                        v-icon(light class="snackbar-icon") cancel
+                        | El email ingresado no es válido
                     v-text-field(
-                        v-model="form.password"
+                        v-model.trim="form.password"
                         single-line
                         label="Contraseña"
                         hint="La contraseña debe contener un mínimo de ocho (8) caracteres"
@@ -38,7 +47,7 @@
                         :append-icon-cb="() => (show_password = !show_password)"
                     )
                     v-text-field(
-                        v-model="form.password_confirm"
+                        v-model.trim="form.password_confirm"
                         single-line
                         label="Confirmar contraseña"
                         hint="Escriba nuevamente su contraseña"
@@ -68,18 +77,33 @@
                     v-snackbar(:class="snackbar.context" top right v-model="snackbar.show") 
                         v-icon(light class="snackbar-icon") {{ snackbar.icon }}
                         | {{ snackbar.message }}                    
-        <!--pre {{ $data }} -->
+        //- pre {{ $data }}
 </template>
 
 <script>
+    import {auth} from '../assets/firebase'
+    
+    import Vue from 'vue'
+    import Vuelidate from 'vuelidate'
+    Vue.use(Vuelidate)
+    import { alpha, required, minLength, email } from 'vuelidate/lib/validators'
+    
     export default {
+        mounted() {
+            console.log(auth)
+        },
         data () {
             return {
+                permit: {
+                    email: null,
+                    name: null,
+                },
                 form: {
                     name: null,
                     email: null,
                     password: null,
-                    password_confirm: null
+                    password_confirm: null,
+
                 },
                 show_password: false,
                 show_password_confirm: false,
@@ -93,6 +117,79 @@
                 },
             }
         },
+        validations: {
+            form: {
+                name: {
+                    alpha,
+                },
+                email: {
+                    email
+                }
+            }
+        },
+        methods: {
+            hola(field) {
+                if (field == 'email') {
+                    this.permit.email = !this.permit.email
+                    this.permit.name = false
+                }
+                else if (field == 'name') {
+                    this.permit.name = !this.permit.name
+                    this.permit.email = false
+                }
+            },
+            signUp() {
+                this.loading_animation = true
+                
+                const name = this.form.name
+                const email = this.form.email
+                const password = this.form.password
+                
+                const create_user = auth.createUserWithEmailAndPassword(email, password)
+                
+                create_user.catch((error) => { this.snackbarShow('error',error.code) })
+                
+                create_user.then(() => {
+                    let user = auth.currentUser
+                    this.snackbarShow('success')
+                    
+                    const complete_user = user.updateProfile({
+                        displayName: name,
+                        photoURL: 'static/img/avatar.png'
+                    })
+                    
+                    complete_user.catch((error) => {
+                        console.log('Ha ocurrido un error al completar el registro')
+                        console.log(error)
+                    })
+                })
+            },
+            snackbarShow(context,error) {
+                this.snackbar.show = true
+                this.loader = null
+                this.loading_animation = false
+                this.snackbar.context = context
+                
+                switch (context) {
+                    case 'error':
+                        this.snackbar.icon = 'cancel'
+                        if (error == 'auth/email-already-in-use') {
+                            this.snackbar.message = 'El email ingresado ya se encuentra en uso'
+                        }
+                        else if (error == 'auth/network-request-failed') {
+                            this.snackbar.message = 'Hemos detectado problemas en su conexión de Internet. Intente de nuevo.'          
+                        }
+                        else { 
+                            this.snackbar.message = 'Ha ocurrido un error inesperado. Intente de nuevo' 
+                        }
+                        break
+                    case 'success':
+                        this.snackbar.icon = 'cancel'
+                        this.snackbar.message = 'Bienvenido a GEST'
+                        break
+                }
+            },
+        }
     }
 </script>
 
@@ -139,8 +236,6 @@
         display: grid
         align-items: center
         justify-content: center
-    .input-group__details
-        padding-right: 40px
     a
         text-decoration: none
     .snackbar-icon

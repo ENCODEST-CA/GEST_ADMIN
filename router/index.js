@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import SignUp from '../pages/SignUp.vue'
 
 // The meta data for your routes
 const meta = require('./meta.json')
@@ -8,28 +7,27 @@ const meta = require('./meta.json')
 // Function to create routes
 // Is default lazy but can be changed
 function route (path, view) {
-  return {
-    path: path,
-    meta: meta[path],
-    component: resolve => import(`pages/${view}View.vue`).then(resolve)
-  }
+	return {
+		path: path,
+		meta: meta[path],
+		component: resolve => import(`pages/${view}.vue`).then(resolve)
+	}
 }
 
 Vue.use(Router)
 
 export function createRouter () {
     const router = new Router({
-      base: __dirname,
-      mode: 'history',
-      scrollBehavior: () => ({ y: 0 }),
-      routes: [
-        route('/', 'Welcome'),
-        route('/inspire', 'Inspire'),
-        //route('/sign-up', 'SignUp'),
-        {path: '/sign-up', component: SignUp},
-        // Global redirect for 404
-        { path: '*', redirect: '/' }
-      ]
+		base: __dirname,
+		mode: 'history',
+		scrollBehavior: () => ({ y: 0 }),
+		routes: [
+			route('/', 'Welcome'),
+			route('/inspire', 'Inspire'),
+			route('/sign-up', 'SignUp'),
+			route('/sign-in', 'SignIn'),
+			{ path: '*', redirect: '/' }
+      	]
     })
 
     // Send a pageview to Google Analytics

@@ -13,5 +13,10 @@
     "title": "GEST - Registrar Cuenta",
     "description": "",
     "keywords": ""
+  },
+  "/sign-in": {
+    "title": "GEST - Iniciar Sesión",
+    "description": "",
+    "keywords": ""
   }
 }
