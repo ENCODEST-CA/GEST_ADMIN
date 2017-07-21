@@ -8,56 +8,42 @@
             form(@submit.prevent="signUp")
                 v-card-text(class="white-bg")
                     v-text-field(
+                        single-line required
                         v-model.trim="form.name"
-                        single-line
                         label="Nombre"
-                        hint="Debe escribir su nombre real"
                         prepend-icon="account_box"
-                        required
-                        @blur="hola('name')"
+                        :rules="form.name ? [form.rules.alpha] : []"
                     )
-                    //pre {{ $data }}
-                    v-snackbar(top right error v-model="snackbar" v-if="!$v.form.name.alpha && this.permit.name")
-                        v-icon(light class="snackbar-icon") cancel
-                        | El nombre no puede contener números ni caracteres especiales
                     v-text-field(
-                        v-model.trim.lazy="form.email"
-                        single-line
+                        single-line required
+                        v-model.trim="form.email"
                         label="Dirección de correo electrónico"
-                        hint="Esta dirección de correo se utilizará para iniciar sesión en GEST"
                         prepend-icon="email"
                         type="email"
-                        required
-                        @blur="hola('email')"
+                        :rules="form.email ? [form.rules.email] : []"
                     )
-                    v-snackbar(top right error v-model="snackbar" v-if="!$v.form.email.email && this.permit.email")
-                        v-icon(light class="snackbar-icon") cancel
-                        | El email ingresado no es válido
+                    pre {{ $data.form }}
                     v-text-field(
+                        single-line required counter
                         v-model.trim="form.password"
-                        single-line
                         label="Contraseña"
-                        hint="La contraseña debe contener un mínimo de ocho (8) caracteres"
                         prepend-icon="vpn_key"
-                        required
                         maxlength="25"
-                        counter
-                        :append-icon="show_password ? 'visibility' : 'visibility_off'"
-                        :type="show_password ? 'text' : 'password'"
-                        :append-icon-cb="() => (show_password = !show_password)"
+                        :append-icon="showPassword ? 'visibility' : 'visibility_off'"
+                        :type="showPassword ? 'text' : 'password'"
+                        :append-icon-cb="() => (showPassword = !showPassword)"
+                        :rules="form.password ? [form.rules.password] : []"
                     )
                     v-text-field(
-                        v-model.trim="form.password_confirm"
-                        single-line
+                        single-line required counter
+                        v-model.trim="form.repeatPassword"
                         label="Confirmar contraseña"
-                        hint="Escriba nuevamente su contraseña"
-                        prepend-icon="vpn_key"
-                        required
+                        prepend-icon="vpn_key"                       
                         maxlength="25"
-                        counter
-                        :append-icon="show_password_confirm ? 'visibility' : 'visibility_off'"
-                        :type="show_password_confirm ? 'text' : 'password'"
-                        :append-icon-cb="() => (show_password_confirm = !show_password_confirm)"
+                        :append-icon="showRepeatPassword ? 'visibility' : 'visibility_off'"
+                        :type="showRepeatPassword ? 'text' : 'password'"
+                        :append-icon-cb="() => (showRepeatPassword = !showRepeatPassword)"
+                        :rules="form.repeatPassword ? [form.rules.sameAsPassword] : []"
                     )
                     div(class="action-secondary")
                         router-link(to="/sign-in")
@@ -66,14 +52,15 @@
                 v-divider
                 v-card-row(actions class="white-bg action-primary")
                     v-btn(
-                        class="white--text cyan"
                         light
-                        :loading="loading_animation"
-                        @click.native="loader = 'loading_animation'"
-                        :disabled="loading_animation"
-                        type="submit") Comienza en GEST
-                            span(slot="loader" class="custom-loader")
-                                v-icon(light) cached
+                        class="white--text cyan"
+                        type="submit"
+                        :loading="loadingAnimation"
+                        :disabled="loadingAnimation"
+                        @click.native="loader = 'loadingAnimation'"
+                    ) Comienza en GEST
+                        span(slot="loader" class="custom-loader")
+                            v-icon(light) cached
                     v-snackbar(:class="snackbar.context" top right v-model="snackbar.show") 
                         v-icon(light class="snackbar-icon") {{ snackbar.icon }}
                         | {{ snackbar.message }}                    
@@ -83,63 +70,69 @@
 <script>
     import {auth} from '../assets/firebase'
     
-    import Vue from 'vue'
-    import Vuelidate from 'vuelidate'
-    Vue.use(Vuelidate)
-    import { alpha, required, minLength, email } from 'vuelidate/lib/validators'
-    
     export default {
-        mounted() {
-            console.log(auth)
-        },
+        mounted() { console.log(auth) },
         data () {
             return {
-                permit: {
-                    email: null,
-                    name: null,
-                },
                 form: {
                     name: null,
                     email: null,
                     password: null,
-                    password_confirm: null,
-
+                    repeatPassword: null,
+                    hasError: false,
+                    rules: {
+                        alpha: (value) => {
+                            let pattern = /^[A-Za-z\_\-\.\s\xF1\xD1]+$/
+                            return pattern.test(value) || 'Evite los números y caracteres especiales'
+                        },
+                        email: (value) => {
+                            let pattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+                            return pattern.test(value) || 'Ingrese un email válido'  
+                        },
+                        password: (value) => {
+                            let pattern = /(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[a-zA-Z]).*$/
+                            return pattern.test(value) || 'Debe ingresar mínimo ocho caracteres, un número y una letra'
+                        },
+                        sameAsPassword: (value) => {
+                            if (this.form.password != value) { 
+                                this.form.hasError = true 
+                                return false || 'Las contraseñas no coinciden'
+                            }
+                            else { return true }
+                        }
+                    },
                 },
-                show_password: false,
-                show_password_confirm: false,
-                loading_animation: false,
+                showPassword: false,
+                showRepeatPassword: false,
+                loadingAnimation: false,
                 loader: null,
                 snackbar: {
                     show: false,
-                    context: null,
-                    message: null,
-                    icon: null
+                    context: 'error',
+                    icon: 'cancel',
+                    message: null
                 },
             }
         },
-        validations: {
+        watch: {
             form: {
-                name: {
-                    alpha,
-                },
-                email: {
-                    email
+                name: function(hola) {
+                    console.log(document.getElementById("name").className) 
                 }
             }
         },
         methods: {
-            hola(field) {
-                if (field == 'email') {
-                    this.permit.email = !this.permit.email
-                    this.permit.name = false
-                }
-                else if (field == 'name') {
-                    this.permit.name = !this.permit.name
-                    this.permit.email = false
-                }
-            },
+            // checkErrors(pattern,value) { 
+            //    if (!pattern.test(value)) { this.form.hasError = true }
+            //    else { this.form.hasError = false }
+            // },
             signUp() {
-                this.loading_animation = true
+                if (this.form.hasError) {
+                    this.snackbar.show = true
+                    this.snackbar.message = 'Hay errores en el formulario de registro'
+                    return
+                }
+                this.loadingAnimation = true
                 
                 const name = this.form.name
                 const email = this.form.email
@@ -167,12 +160,10 @@
             snackbarShow(context,error) {
                 this.snackbar.show = true
                 this.loader = null
-                this.loading_animation = false
-                this.snackbar.context = context
+                this.loadingAnimation = false
                 
                 switch (context) {
                     case 'error':
-                        this.snackbar.icon = 'cancel'
                         if (error == 'auth/email-already-in-use') {
                             this.snackbar.message = 'El email ingresado ya se encuentra en uso'
                         }
@@ -184,6 +175,7 @@
                         }
                         break
                     case 'success':
+                        this.snackbar.context = 'success'
                         this.snackbar.icon = 'cancel'
                         this.snackbar.message = 'Bienvenido a GEST'
                         break
