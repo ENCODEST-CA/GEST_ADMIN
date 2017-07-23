@@ -5,24 +5,22 @@
                 v-container(fill-height fluid)
                     v-layout(fill-height)
                         span(class="display-3") INICIA EN GEST
-            form(@submit.prevent="signUp")
+            form(@submit.prevent="checkErrors")
                 v-card-text(class="white-bg")
                     v-text-field(
                         single-line required
-                        v-model.trim="form.name"
+                        v-model="form.name"
                         label="Nombre"
                         prepend-icon="account_box"
-                        :rules="form.name ? [form.rules.alpha] : []"
+                        :rules="form.name ? [form.rules.name] : []"
                     )
                     v-text-field(
                         single-line required
-                        v-model.trim="form.email"
+                        v-model="form.email"
                         label="Dirección de correo electrónico"
                         prepend-icon="email"
-                        type="email"
                         :rules="form.email ? [form.rules.email] : []"
                     )
-                    pre {{ $data.form }}
                     v-text-field(
                         single-line required counter
                         v-model.trim="form.password"
@@ -43,7 +41,7 @@
                         :append-icon="showRepeatPassword ? 'visibility' : 'visibility_off'"
                         :type="showRepeatPassword ? 'text' : 'password'"
                         :append-icon-cb="() => (showRepeatPassword = !showRepeatPassword)"
-                        :rules="form.repeatPassword ? [form.rules.sameAsPassword] : []"
+                        :rules="form.repeatPassword ? [form.rules.repeatPassword] : []"
                     )
                     div(class="action-secondary")
                         router-link(to="/sign-in")
@@ -61,17 +59,14 @@
                     ) Comienza en GEST
                         span(slot="loader" class="custom-loader")
                             v-icon(light) cached
-                    v-snackbar(:class="snackbar.context" top right v-model="snackbar.show") 
-                        v-icon(light class="snackbar-icon") {{ snackbar.icon }}
-                        | {{ snackbar.message }}                    
-        //- pre {{ $data }}
+                    v-snackbar(top right class="error" v-model="snackbar.show") 
+                        v-icon(light class="snackbar-icon") cancel
+                        | {{ snackbar.message }}
 </template>
 
 <script>
     import {auth} from '../assets/firebase'
-    
     export default {
-        mounted() { console.log(auth) },
         data () {
             return {
                 form: {
@@ -79,28 +74,18 @@
                     email: null,
                     password: null,
                     repeatPassword: null,
-                    hasError: false,
+                    hasError: null,
                     rules: {
-                        alpha: (value) => {
-                            let pattern = /^[A-Za-z\_\-\.\s\xF1\xD1]+$/
-                            return pattern.test(value) || 'Evite los números y caracteres especiales'
-                        },
-                        email: (value) => {
-                            let pattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-                            return pattern.test(value) || 'Ingrese un email válido'  
-                        },
-                        password: (value) => {
-                            let pattern = /(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[a-zA-Z]).*$/
-                            return pattern.test(value) || 'Debe ingresar mínimo ocho caracteres, un número y una letra'
-                        },
-                        sameAsPassword: (value) => {
-                            if (this.form.password != value) { 
-                                this.form.hasError = true 
-                                return false || 'Las contraseñas no coinciden'
-                            }
-                            else { return true }
-                        }
+                        name: (value) => { return this.regex.name.test(value) || 'Evite los números y caracteres especiales' },
+                        email: (value) => { return this.regex.email.test(value) || 'Ingrese un email válido' },
+                        password: (value) => { return this.regex.password.test(value) || 'Debe ingresar mínimo ocho caracteres, un número y una letra' },
+                        repeatPassword: (value) => { if (this.form.password != value) { return false || 'Las contraseñas no coinciden' } else { return true } }
                     },
+                },
+                regex: {
+                    name: /^\S[A-Za-z\_\-\.\s\xF1\xD1]+$/,
+                    email:  /^\S(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                    password: /(?=^.{8,}$)((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[a-zA-Z]).*$/,
                 },
                 showPassword: false,
                 showRepeatPassword: false,
@@ -108,76 +93,55 @@
                 loader: null,
                 snackbar: {
                     show: false,
-                    context: 'error',
-                    icon: 'cancel',
                     message: null
                 },
             }
         },
-        watch: {
-            form: {
-                name: function(hola) {
-                    console.log(document.getElementById("name").className) 
-                }
-            }
-        },
         methods: {
-            // checkErrors(pattern,value) { 
-            //    if (!pattern.test(value)) { this.form.hasError = true }
-            //    else { this.form.hasError = false }
-            // },
-            signUp() {
-                if (this.form.hasError) {
-                    this.snackbar.show = true
-                    this.snackbar.message = 'Hay errores en el formulario de registro'
-                    return
+            checkErrors() {
+                for (let i in this.regex) {
+                    this.regex[i].test(this.form[i]) ? this.form.hasError = false : this.form.hasError = true
+                    if (this.form.hasError) { return }
                 }
+                if (this.form.password == this.form.repeatPassword) { this.signUp() }
+            },
+            signUp() {
                 this.loadingAnimation = true
-                
-                const name = this.form.name
-                const email = this.form.email
+                const name = this.form.name.trim()
+                const email = this.form.email.trim()
                 const password = this.form.password
                 
                 const create_user = auth.createUserWithEmailAndPassword(email, password)
                 
-                create_user.catch((error) => { this.snackbarShow('error',error.code) })
-                
                 create_user.then(() => {
-                    let user = auth.currentUser
-                    this.snackbarShow('success')
-                    
+                    this.loader = null
+                    this.loadingAnimation = false
+
+                    const user = auth.currentUser                   
                     const complete_user = user.updateProfile({
                         displayName: name,
                         photoURL: 'static/img/avatar.png'
                     })
                     
-                    complete_user.catch((error) => {
-                        console.log('Ha ocurrido un error al completar el registro')
-                        console.log(error)
-                    })
+                    complete_user.catch((error) => console.log(error))
                 })
+
+                create_user.catch((error) => this.showSnackbar(error.code))
             },
-            snackbarShow(context,error) {
+            showSnackbar(error) {
                 this.snackbar.show = true
                 this.loader = null
                 this.loadingAnimation = false
                 
-                switch (context) {
-                    case 'error':
-                        if (error == 'auth/email-already-in-use') {
-                            this.snackbar.message = 'El email ingresado ya se encuentra en uso'
-                        }
-                        else if (error == 'auth/network-request-failed') {
-                            this.snackbar.message = 'Hemos detectado problemas en su conexión de Internet. Intente de nuevo.'          
-                        }
-                        else { 
-                            this.snackbar.message = 'Ha ocurrido un error inesperado. Intente de nuevo' 
-                        }
+                switch (error) {
+                    case 'auth/email-already-in-use':
+                        this.snackbar.message = 'El email ingresado ya se encuentra en uso'
                         break
-                    case 'success':
-                        this.snackbar.context = 'success'
-                        this.snackbar.icon = 'cancel'
-                        this.snackbar.message = 'Bienvenido a GEST'
+                    case 'auth/network-request-failed':
+                        this.snackbar.message = 'Hemos detectado problemas en su conexión de Internet. Intente de nuevo.'
+                        break
+                    default:
+                        this.snackbar.message = 'Ha ocurrido un error inesperado. Intente de nuevo' 
                         break
                 }
             },
