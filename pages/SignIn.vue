@@ -5,28 +5,25 @@
                 v-container(fill-height fluid)
                     v-layout(fill-height)
                         span(class="display-3") GEST ADMIN
-            form(@submit.prevent="signIn")
+            form(@submit.prevent="checkErrors")
                 v-card-text(class="white-bg")
                     v-text-field(
+                        single-line required
                         v-model="form.email"
-                        single-line
                         label="Dirección de correo electrónico"
-                        hint="Esta dirección de correo se utilizará para iniciar sesión en GEST"
                         prepend-icon="email"
-                        type="email"
-                        required)
+                        :rules="form.email ? [form.rules.email] : []"
+                    )
                     v-text-field(
-                        v-model="form.password"
-                        single-line
+                        single-line required counter
+                        v-model.trim="form.password"
                         label="Contraseña"
-                        hint="La contraseña debe contener un mínimo de ocho (8) caracteres"
                         prepend-icon="vpn_key"
-                        required
                         maxlength="25"
-                        counter
-                        :append-icon="show_password ? 'visibility' : 'visibility_off'"
-                        :type="show_password ? 'text' : 'password'"
-                        :append-icon-cb="() => (show_password = !show_password)")
+                        :append-icon="showPassword ? 'visibility' : 'visibility_off'"
+                        :type="showPassword ? 'text' : 'password'"
+                        :append-icon-cb="() => (showPassword = !showPassword)"
+                    )
                     div(class="action-secondary")
                         router-link(to="/sign-up")
                             v-btn(light info flat class="cyan--text btn-action-secondary") Registrarse
@@ -34,41 +31,81 @@
                 v-divider
                 v-card-row(actions class="white-bg action-primary")
                     v-btn(
-                        class="white--text cyan"
                         light
-                        :loading="loading_animation"
-                        @click.native="loader = 'loading_animation'"
-                        :disabled="loading_animation"
-                        type="submit") Iniciar Sesión
+                        type="submit"
+                        class="white--text cyan"
+                        :loading="loadingAnimation"
+                        :disabled="loadingAnimation"
+                        @click.native="loader = 'loadingAnimation'"
+                    ) Iniciar Sesión
                             span(slot="loader" class="custom-loader")
                                 v-icon(light) cached
-                    v-snackbar(:timeout="6000" :class="snackbar.context" top right v-model="snackbar.show") 
-                        v-icon(light class="snackbar-icon") {{ snackbar.icon }}
+                    v-snackbar(top right class="error" v-model="snackbar.show") 
+                        v-icon(light class="snackbar-icon") cancel
                         | {{ snackbar.message }}
-        <!--pre {{ $data }} -->
 </template>
 
 <script>
+    import {auth} from '../assets/firebase'
     export default {
         data () {
             return {
                 form: {
                     email: null,
                     password: null,
-                    password_confirm: null
+                    hasError: null,
+                    rules: {
+                        email: (value) => { return this.regexEmail.test(value) || 'Ingrese un email válido' }
+                    },
                 },
-                show_password: false,
-                show_password_confirm: false,
-                loading_animation: false,
+                regexEmail: /^\S(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                showPassword: false,
+                loadingAnimation: false,
                 loader: null,
                 snackbar: {
                     show: false,
-                    context: null,
                     message: null,
-                    icon: null,
                 },
             }
         },
+        methods: {
+            checkErrors() {
+                this.regexEmail.test(this.form.email) ? this.form.hasError = false : this.form.hasError = true
+                if (!this.form.hasError) { this.signIn() }
+            },
+            signIn() {
+                this.loadingAnimation = true
+                const email = this.form.email.trim()
+                const password = this.form.password
+                
+                const auth_user = auth.signInWithEmailAndPassword(email, password)
+                
+                auth_user.then(() => {
+                    this.loader = null
+                    this.loadingAnimation = false
+                    const user = auth.currentUser
+                })
+
+                auth_user.catch((error) => this.showSnackbar(error.code))
+            },
+            showSnackbar(error) {
+                this.snackbar.show = true
+                this.loader = null
+                this.loadingAnimation = false
+                
+                switch (error) {
+                    case 'auth/user-disabled':
+                        this.snackbar.message = 'El usuario ingresado se encuentra inactivo actualmente.'
+                        break
+                    case 'auth/network-request-failed':
+                        this.snackbar.message = 'Hemos detectado problemas en su conexión de Internet. Intente de nuevo.'
+                        break
+                    default:
+                        this.snackbar.message = 'Credenciales incorrectas.'
+                        break
+                }
+            }
+        }
     }
 </script>
 
@@ -84,7 +121,6 @@
     .card
         display: grid
         width: 450px
-    
     .white-bg
         background: white
     .input-group
@@ -98,7 +134,6 @@
     .action-primary
         display: grid
         grid-template-columns: 1fr
-    
     .custom-loader
         animation: loader 1s infinite
         display: flex

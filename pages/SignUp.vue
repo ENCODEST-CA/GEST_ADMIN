@@ -161,7 +161,6 @@
     .card
         display: grid
         width: 450px
-    
     .white-bg
         background: white
     .input-group__counter
@@ -175,7 +174,6 @@
     .action-primary
         display: grid
         grid-template-columns: 1fr
-    
     .custom-loader
         animation: loader 1s infinite
         display: flex
