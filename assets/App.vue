@@ -2,23 +2,28 @@
 	v-app
 		div(v-if="user.signed")
 			v-navigation-drawer(
-				dark persistent clipped
+				persistent clipped
+				class="grey darken-4"
 				v-model="sidebar.self"
-				:mini-variant="mini"
+				:mini-variant="sidebar.mini"
 			)
-				v-list(dense)
-					v-subheader(class="mt-3 grey--text text--darken-1") ORGANIZACIÓN
-					v-list-tile(ripple v-for="item in menuCompany" :key="menuCompany.key")
+				v-list(dense class="grey darken-4")
+					v-subheader(class="mt-2 grey--text text--darken-1") 
+						p(class="title-sidebar") ORGANIZACIÓN
+					v-list-tile(ripple v-for="item in sidebar.menuCompany" :key="sidebar.menuCompany.text" class="hover-gray")
 						v-list-tile-action
-							v-icon(dark) {{ item.icon }}
+							v-icon(class="grey--text icon-large") {{ item.icon }}
 						v-list-tile-content
-							v-list-tile-title {{ item.text }}
-					v-subheader(class="mt-3 grey--text text--darken-1") TRABAJO
-					v-list-tile(ripple v-for="item in menuTask" :key="menuTask.key")
+							v-list-tile-title(class="white--text text-normal") {{ item.text }}
+					v-divider(dark class="my-2")
+					v-subheader(class="mt-2 grey--text text--darken-1") 
+						p(class="title-sidebar") TRABAJO
+					v-list-tile(ripple v-for="item in sidebar.menuTask" :key="sidebar.menuTask.text" class="hover-gray")
 						v-list-tile-action
-							v-icon(dark) {{ item.icon }}
+							v-icon(class="grey--text icon-large") {{ item.icon }}
 						v-list-tile-content
-							v-list-tile-title {{ item.text }}
+							v-list-tile-title(class="white--text text-normal") {{ item.text }}
+					v-divider(dark class="my-2")
 			v-toolbar(fixed dark class="cyan")
 				v-toolbar-side-icon(@click.native.stop="sidebar.self = !sidebar.self")
 				v-btn(icon @click.native.stop="sidebar.mini = !sidebar.mini")
@@ -34,11 +39,11 @@
 								v-list-tile-content
 									v-list-tile-title(class="capitalize") {{ user.name }}
 					v-list
-						v-list-tile(v-for="item in menuUser" :key="menuUser.title")
+						v-list-tile(v-for="item in toolbar.menuUser" :key="toolbar.menuUser.title")
 							v-list-tile-action
 								v-icon(light) {{ item.icon }}
 							v-list-tile-title {{ item.text }}
-				div(v-for="item in icons")
+				div(v-for="item in toolbar.icons")
 					v-btn(icon)
 						v-icon {{ item.icon }}
 			main
@@ -67,33 +72,33 @@
 		},
 		data () {
 			return {
-                toolbar: {
-                    title: 'GEST ADMIN - Dashboard',
-                    menuUser: [
-                        { icon: 'account_box', text: 'Mi Perfil' },
-                        { icon: 'forward', text: 'Cerrar Sesión' }
-                    ],
-                    icons: [
-                        { icon: 'assignment' },
-                        { icon: 'notifications' },
-                        { icon: 'star' },
-                        { icon: 'settings' },
-                    ],
-                },
-                sidebar: {
-                    self: true,
-                    mini: false,
-                    menuCompany: [
-                        { key: true, icon: 'business', text: 'Humanitas de Venezuela' },
-                        { key: true, icon: 'extension', text: 'Gerencia de Sistemas' },
-                    ],
-                    menuTask: [
-                        { key: true, icon: 'assignment_ind', text: 'Mis Asignaciones' },
-                        { key: true, icon: 'assignment_late', text: 'Sin Asignar' },
-                    ],
-                },
+				toolbar: {
+					title: 'GEST ADMIN - Dashboard',
+					menuUser: [
+						{ icon: 'account_box', text: 'Mi Perfil' },
+						{ icon: 'forward', text: 'Cerrar Sesión' }
+					],
+					icons: [
+						{ icon: 'assignment' },
+						{ icon: 'notifications' },
+						{ icon: 'star' },
+						{ icon: 'settings' },
+					],
+				},
+				sidebar: {
+					self: true,
+					mini: false,
+					menuCompany: [
+						{ icon: 'business', text: 'Humanitas de Venezuela' },
+						{ icon: 'extension', text: 'Gerencia de Sistemas' },
+					],
+					menuTask: [
+						{ icon: 'assignment_ind', text: 'Mis Asignaciones' },
+						{ icon: 'assignment_late', text: 'Sin Asignar' },
+					],
+				},
 				user: {
-                    signed: null,
+					signed: null,
 					email: null,
 					name: null,
 				},
@@ -113,4 +118,13 @@
 		bottom: 10px
 	.capitalize
 		text-transform: capitalize
+	.title-sidebar
+		font-size: 15px
+		font-weight: bold
+	.icon-large
+		font-size: 30px !important
+	.text-normal
+		font-size: 14px
+	.hover-gray:hover
+		background-color: hsla(0, 0%, 28%, 1)
 </style>
