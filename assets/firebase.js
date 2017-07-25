@@ -8,8 +8,15 @@ const config = {
     messagingSenderId: "451718974469"
 };
 
-if (!firebase.apps.length) {
-    firebase.initializeApp(config);
-}
+if (!firebase.apps.length) { firebase.initializeApp(config) }
     
 export const auth = firebase.auth()
+
+export const check = auth.onAuthStateChanged((user) => { 
+    if (user) {
+        return true
+    } 
+    else { 
+        return false
+    } 
+})

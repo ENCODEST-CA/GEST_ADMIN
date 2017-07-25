@@ -29,7 +29,7 @@
                             v-btn(light info flat class="cyan--text btn-action-secondary") Registrarse
                                 v-icon(right class="cyan--text") person_add
                 v-divider
-                v-card-row(actions class="white-bg action-primary")
+                v-card-actions(actions class="white-bg action-primary")
                     v-btn(
                         light
                         type="submit"
@@ -83,7 +83,7 @@
                 auth_user.then(() => {
                     this.loader = null
                     this.loadingAnimation = false
-                    const user = auth.currentUser
+                    this.$router.push({ path: '/login'})
                 })
 
                 auth_user.catch((error) => this.showSnackbar(error.code))
