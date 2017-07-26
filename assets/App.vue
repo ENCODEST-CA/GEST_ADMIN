@@ -24,7 +24,7 @@
 						v-list-tile-content
 							v-list-tile-title(class="white--text text-normal") {{ item.text }}
 					v-divider(dark class="my-2")
-			v-toolbar(fixed dark class="cyan")
+			v-toolbar(fixed dark class="blue")
 				v-toolbar-side-icon(@click.native.stop="sidebar.self = !sidebar.self")
 				v-btn(icon @click.native.stop="sidebar.mini = !sidebar.mini")
 					v-icon(v-html="sidebar.mini ? 'chevron_right' : 'chevron_left'")
@@ -73,7 +73,7 @@
 		data () {
 			return {
 				toolbar: {
-					title: 'GEST ADMIN - Dashboard',
+					title: 'GEST ADMIN — Dashboard',
 					menuUser: [
 						{ icon: 'account_box', text: 'Mi Perfil' },
 						{ icon: 'forward', text: 'Cerrar Sesión' }
