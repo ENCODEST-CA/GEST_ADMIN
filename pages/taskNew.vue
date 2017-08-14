@@ -6,7 +6,7 @@
 					v-container(fill-height fluid)
 						v-layout(fill-height)
 							v-flex(xs12 flexbox class="centered-percentege")
-								span(class="headline") Nueva tarea Express				
+								span(class="headline") Nueva Tarea Express				
 				v-layout(row wrap class="form-border")
 						v-flex(xs6 sm6 md6 class="my-3 camp")
 							v-layout(row wrap)
@@ -89,12 +89,10 @@
 		margin: 0px 0px 0px 0px
 	.form-border
 		padding: 25px 25px 0px 25px
-
 	.centered-percentege
 	    position: absolute
 	    left: 130px
 	    top: 50%
 	    transform: translate(-50%, -50%)
 	    -webkit-transform: translate(-50%, -50%)
-
 </style>

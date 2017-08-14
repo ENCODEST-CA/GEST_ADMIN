@@ -18,5 +18,10 @@
     "title": "GEST - Iniciar Sesión",
     "description": "",
     "keywords": ""
+  },
+  "/task/new/": {
+    "title": "Nueva Tarea Express",
+    "description": "",
+    "keywords": ""
   }
 }
