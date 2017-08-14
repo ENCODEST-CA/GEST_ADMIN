@@ -25,6 +25,7 @@ export function createRouter () {
 			route('/', 'Dashboard'),
 			route('/sign-up', 'SignUp'),
 			route('/sign-in', 'SignIn'),
+			route('/task/new', 'TaskNew'),
 			{ path: '*', redirect: '/' }
       	]
     })
