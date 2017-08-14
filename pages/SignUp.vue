@@ -48,7 +48,7 @@
                             v-btn(light info flat class="cyan--text btn-action-secondary") Ya tengo cuenta
                                 v-icon(right class="cyan--text") beenhere
                 v-divider
-                v-card-row(actions class="white-bg action-primary")
+                v-card-actions(actions class="white-bg action-primary")
                     v-btn(
                         light
                         class="white--text cyan"
