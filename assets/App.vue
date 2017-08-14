@@ -10,7 +10,13 @@
 				v-list(dense class="grey darken-4")
 					v-subheader(class="mt-2 grey--text text--darken-1") 
 						p(class="title-sidebar") ORGANIZACIÓN
-					v-list-tile(ripple v-for="item in sidebar.menuCompany" :key="sidebar.menuCompany.text" class="hover-gray")
+					v-list-tile(
+						ripple
+						class="hover-gray"
+						v-for="item in sidebar.menuCompany" 
+						:key="sidebar.menuCompany.text"
+						:to="item.link"
+					)
 						v-list-tile-action
 							v-icon(class="grey--text icon-large") {{ item.icon }}
 						v-list-tile-content
@@ -18,7 +24,13 @@
 					v-divider(dark class="my-2")
 					v-subheader(class="mt-2 grey--text text--darken-1") 
 						p(class="title-sidebar") TRABAJO
-					v-list-tile(ripple v-for="item in sidebar.menuTask" :key="sidebar.menuTask.text" class="hover-gray")
+					v-list-tile(
+						ripple
+						class="hover-gray"
+						v-for="item in sidebar.menuTask" 
+						:key="sidebar.menuTask.text"
+						:to="item.link"
+					)
 						v-list-tile-action
 							v-icon(class="grey--text icon-large") {{ item.icon }}
 						v-list-tile-content
@@ -93,7 +105,7 @@
 						{ icon: 'extension', text: 'Gerencia de Sistemas' },
 					],
 					menuTask: [
-						{ icon: 'assignment_ind', text: 'Mis Asignaciones' },
+						{ icon: 'stars', text: 'Nueva Tarea Express', link: '/task/new/' },
 						{ icon: 'assignment_late', text: 'Sin Asignar' },
 					],
 				},
