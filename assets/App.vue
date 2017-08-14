@@ -47,7 +47,7 @@
 					v-btn(icon)
 						v-icon {{ item.icon }}
 			main
-				v-container fluid
+				v-container
 				v-slide-y-transition(mode="out-in")
 					router-view
 		div(v-else)

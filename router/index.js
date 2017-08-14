@@ -22,8 +22,7 @@ export function createRouter () {
 		mode: 'history',
 		scrollBehavior: () => ({ y: 0 }),
 		routes: [
-			route('/', 'Welcome'),
-			route('/inspire', 'Inspire'),
+			route('/', 'Dashboard'),
 			route('/sign-up', 'SignUp'),
 			route('/sign-in', 'SignIn'),
 			{ path: '*', redirect: '/' }

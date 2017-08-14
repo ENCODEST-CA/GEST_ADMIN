@@ -4,11 +4,6 @@
     "description": "My Vuetify.js Project",
     "keywords": "vue 2.0, vuetify"
   },
-  "/inspire": {
-    "title": "GEST",
-    "description": "",
-    "keywords": ""
-  },
   "/sign-up": {
     "title": "GEST - Registrar Cuenta",
     "description": "",
