@@ -5,8 +5,7 @@
 				persistent clipped
 				class="grey darken-4"
 				v-model="sidebar.self"
-				:mini-variant="sidebar.mini"
-			)
+				:mini-variant="sidebar.mini")
 				v-list(dense class="grey darken-4")
 					v-subheader(class="mt-2 grey--text text--darken-1") 
 						p(class="title-sidebar") ORGANIZACIÓN
@@ -15,8 +14,7 @@
 						class="hover-gray"
 						v-for="item in sidebar.menuCompany" 
 						:key="sidebar.menuCompany.text"
-						:to="item.link"
-					)
+						:to="item.link")
 						v-list-tile-action
 							v-icon(class="grey--text icon-large") {{ item.icon }}
 						v-list-tile-content
@@ -29,8 +27,7 @@
 						class="hover-gray"
 						v-for="item in sidebar.menuTask" 
 						:key="sidebar.menuTask.text"
-						:to="item.link"
-					)
+						:to="item.link")
 						v-list-tile-action
 							v-icon(class="grey--text icon-large") {{ item.icon }}
 						v-list-tile-content
@@ -106,7 +103,7 @@
 					],
 					menuTask: [
 						{ icon: 'stars', text: 'Nueva Tarea Express', link: '/task/new/' },
-						{ icon: 'assignment_late', text: 'Sin Asignar' },
+						{ icon: 'assignment_late', text: 'Sin Asignar', link: '/' },
 					],
 				},
 				user: {
